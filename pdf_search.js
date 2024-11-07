@@ -1,6 +1,6 @@
 async function caricaCandidatura() {
     try {
-        const response = await fetch("https://<username>.github.io/Documents/public/pdf_list.json");
+        const response = await fetch("https://olliker.github.io/Documents/public/pdf_list.json");
         
         if (!response.ok) {
             throw new Error(`Errore nella risposta: ${response.status}`);
