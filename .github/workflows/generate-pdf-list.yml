@@ -1,4 +1,4 @@
-name: Generate PDF List
+name: Generate PDF List for GitHub Pages
 
 on:
   push:
@@ -18,9 +18,16 @@ jobs:
       - name: Generate PDF list JSON
         run: |
           mkdir -p public
-          find Documents -name "*.pdf" | jq -R -s 'split("\n") | map(select(length > 0)) | map({path: ., name: (.|split("/"))[-1]})' > public/pdf_list.json
+          # Trova tutti i file PDF e crea una struttura JSON con il percorso completo
+          find Documents -type f -name "*.pdf" | jq -R -s '
+          split("\n") | map(select(length > 0)) |
+          map({
+            path: ., 
+            name: (.|split("/"))[-1],
+            folder: (.|split("/")[1:-1]|join("/"))
+          })' > public/pdf_list.json
 
-      - name: Commit and push JSON file
+      - name: Push JSON to GitHub Pages
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
