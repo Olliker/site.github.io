@@ -1,6 +1,6 @@
 async function caricaCandidatura() {
     try {
-        const response = await fetch("https://olliker.github.io/Documents/public/pdf_list.json");
+        const response = await fetch("https://olliker.github.io/site.github.io/public/pdf_list.json");
         
         if (!response.ok) {
             throw new Error(`Errore nella risposta: ${response.status}`);
@@ -8,7 +8,6 @@ async function caricaCandidatura() {
 
         const files = await response.json();
         
-        // Filtra e organizza i file PDF per sezione
         const sezione = document.getElementById("documenti-candidatura");
         const accordionEsterni = document.getElementById("accordion-esterni");
         const accordionInterni = document.getElementById("accordion-interni");
