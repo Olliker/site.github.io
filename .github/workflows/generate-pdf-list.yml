@@ -1,54 +1,58 @@
-name: Update PDF List on Site Repo
+permissions:
+  contents: write
+  actions: read
+
+name: Generate and Publish PDF List
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '**/*.pdf'
+  workflow_dispatch:
 
 jobs:
   update-pdf-list:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Clona il repository "Byte-Your-Dreams/Documents"
+      # Step 1: Check out the Byte-Your-Dreams/Documents repository
       - name: Check out Documents repository
         uses: actions/checkout@v2
-
-      # Step 2: Genera il file JSON con i PDF e la struttura delle cartelle
-      - name: Generate PDF list JSON
-        run: |
-          mkdir -p pdf_data
-          # Trova tutti i file PDF e crea una struttura JSON con il percorso completo
-          find Documents -type f -name "*.pdf" | jq -R -s '
-          split("\n") | map(select(length > 0)) |
-          map({
-            path: ., 
-            name: (.|split("/"))[-1],
-            folder: (.|split("/")[1:-1]|join("/"))
-          })' > pdf_data/pdf_list.json
-
-      # Step 3: Clona la repository del sito dove verrà pubblicato il JSON
-      - name: Check out Site Repository
-        uses: actions/checkout@v2
         with:
-          repository: olliker/site.github.io
-          path: site_repo
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # Assicurati di configurare questo token nei Secrets della repository
-
-      # Step 4: Copia il JSON nella repository del sito e pubblicalo
-      - name: Copy JSON to Site Repository
+          fetch-depth: 0
+      
+      # Clone source
+      - name: Clone Source Repository
         run: |
-          cp pdf_data/pdf_list.json site_repo/public/pdf_list.json
+          git clone https://github.com/Byte-Your-Dreams/Documents.git docs/
+      
+       # Copy folders from source
+      # - name: Copy Folders
+      #   run: |
+      #    mkdir -p docs
+      #    cp -r source-repo/* docs/
 
-      - name: Commit and Push JSON to Site Repo
+      # # Step 2: Generate the PDF list JSON file
+      # - name: Generate PDF list JSON
+      #   run: |
+      #     mkdir -p public
+      #     # Find all PDF files and generate a JSON file with full path information
+      #     find Documents -type f -name "*.pdf" | jq -R -s '
+      #     split("\n") | map(select(length > 0)) |
+      #     map({
+      #       path: ., 
+      #       name: (.|split("/"))[-1],
+      #       folder: (.|split("/")[1:-1]|join("/"))
+      #     })' > public/pdf_list.json
+
+      # # Step 3: Copy pdf_list.json to the site repository
+      # - name: Copy JSON file to site repository
+      #   run: |
+      #     cp public/pdf_list.json site-repo/public/pdf_list.json
+
+       # Step 5: Commit and push the JSON file to the site repository
+      - name: Commit and Push JSON to Site Repository
         run: |
-          cd site_repo
+          cd docs
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/pdf_list.json
-          git commit -m "Update PDF list in site repo"
+          git add -A
+          git commit -m "Update PDF list automatically"
           git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
